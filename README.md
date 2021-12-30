@@ -1,5 +1,7 @@
 # AHC001のビジュアライザ
 
+![visualizer](https://user-images.githubusercontent.com/56508025/147786054-f880f3ec-4790-4d68-93a3-9ee201be9c24.png)
+
 - 問題 https://atcoder.jp/contests/ahc001/tasks/ahc001_a
 
 inputに入力ファイル、logにログファイルを選択してください。
