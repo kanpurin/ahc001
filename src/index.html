@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>AHC001 Visualizer</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+</head>
+
+<body>
+    <div style="display:flex">
+        <div class="inline-block_test1">
+            <canvas id="myCanvas" height="10000" width="10000"></canvas>
+        </div>
+        <div class="inline-block_test2">
+            <input type="button" value="クリア" onclick="inputClear()">
+            input:<input type="file" id="inputfile" onchange="handleInputFiles(this.files)"><br>
+            <input type="button" value="クリア" onclick="logClear()">
+            log:<input type="file" id="logfile" onchange="handleLogFiles(this.files)"><br>
+            speed:<input id="speed" type="number" value="10" style="width:50px">
+            <input id="start" type="button" value="再生"
+                onclick="clearInterval(play); play=setInterval(autoPlay,1000/document.getElementById('speed').value);">
+            <input id="end" type="button" value="停止" onclick="clearInterval(play)"><br>
+            <input id="slider" type="range" value="1" min="1" max="1" step="1"
+                oninput="document.getElementById('output1').value=this.value+'/'+String(T); draw()" style="width:350px">
+            <output id="output1">1/0</output><br>
+            score:<output id="score">-1</output>
+            <canvas id="myChart" height="250" width="500"></canvas>
+        </div>
+    </div>
+    <output id="test">0</output>
+
+    <script>
+        let N=200;
+        let T=0;
+        let isLoadInput = false;
+        let isLoadLog = false;
+        let advX;
+        let advY;
+        let advR;
+        let advLog;
+
+        function handleInputFiles(file) {
+            let reader = new FileReader();
+            reader.readAsText(file[0]);
+            reader.onload = function (ev) {
+                const inputDatalist = reader.result.split(/[\r\n]+/);
+                let firstLine = inputDatalist[0].split(" ");
+                N = Number(firstLine[0]);
+                advX = [];
+                advY = [];
+                advR = [];
+                for (let i = 0; i < N; i++) {
+                    let lineNo = i+1;
+                    let inputLine = inputDatalist[lineNo].split(" ");
+                    advX[i] = Number(inputLine[0]);
+                    advY[i] = Number(inputLine[1]);
+                    advR[i] = Number(inputLine[2]);
+                }
+                isLoadInput = true;
+                draw();
+            }
+        }
+
+        function handleLogFiles(file) {
+            let reader = new FileReader();
+            reader.readAsText(file[0]);
+            reader.onload = function (ev) {
+                const logDatalist = reader.result.split(/[\r\n]+/);
+                let firstLine = logDatalist[0].split(" ");
+                if (isLoadInput) {
+                    advLog = [];
+                    for (let t = 0; (t+1)*N <= logDatalist.length; t++) {
+                        advLog.push([...Array(N)].map(() => [...Array(4)]));
+                        for (let i = 0; i < N; i++) {
+                            let lineNo = t*N+i;
+                            let inputLine = logDatalist[lineNo].split(" ");
+                            for (let j = 0; j < 4; j++) advLog[t][i][j] = Number(inputLine[j]);
+                        }
+                    }
+                    T = advLog.length;
+                    document.getElementById("slider").max = T;
+                    document.getElementById("output1").value = document.getElementById("slider").value+"/"+String(T);
+                }
+                isLoadLog = true;
+            }
+        }
+
+        function inputClear() {
+            isLoadInput = false;
+            N=200;
+            advX = [];
+            advY = [];
+            advR = [];
+            document.getElementById("inputfile").value = "";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function logClear() {
+            T = 0;
+            isLoadLog = false;
+            advLog = [];
+            document.getElementById("logfile").value = "";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("slider").max = 1;
+            clearInterval(play);
+        }
+    </script>
+    <script src="./js/visualizer.js"></script>
+</body>
+
+</html>
